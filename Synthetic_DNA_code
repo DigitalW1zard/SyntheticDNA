@@ -1,0 +1,56 @@
+import random
+
+def generate_dna_sequence(length, placeholders=None):
+    """
+    Generate a synthetic DNA sequence of a given length with optional placeholders.
+
+    Parameters:
+    - length (int): The total length of the DNA sequence.
+    - placeholders (dict): A dictionary where keys are positions (int) and values are dictionaries 
+      with 'name' (str) and 'length' (int) of the placeholder.
+
+    Returns:
+    - str: A synthetic DNA sequence with placeholders embedded.
+    """
+    # Define nucleotide bases
+    bases = ['A', 'T', 'C', 'G']
+
+    # Validate and sort placeholders by position
+    placeholder_positions = sorted(placeholders.keys()) if placeholders else []
+    sequence = []
+    idx = 0
+
+    for pos in placeholder_positions:
+        placeholder = placeholders[pos]
+        if pos < idx:
+            raise ValueError(f"Overlapping placeholders detected at position {pos}.")
+        if pos + placeholder['length'] > length:
+            raise ValueError(f"Placeholder '{placeholder['name']}' exceeds sequence bounds.")
+
+        # Append random bases up to the position of the placeholder
+        if pos > idx:
+            sequence.extend(random.choices(bases, k=pos - idx))
+
+        # Append the placeholder
+        sequence.append(f"{{{placeholder['name']}}}")
+        idx = pos + placeholder['length']
+
+    # Fill the remaining sequence with random bases
+    if idx < length:
+        sequence.extend(random.choices(bases, k=length - idx))
+
+    return ''.join(sequence)
+
+# Example usage:
+length_of_dna = 100
+placeholders = {
+    10: {"name": "GENE_A", "length": 15},  # Insert {GENE_A} at position 10, 15 nucleotides long
+    50: {"name": "PROMOTER", "length": 10},  # Insert {PROMOTER} at position 50, 10 nucleotides long
+}
+
+try:
+    synthetic_dna = generate_dna_sequence(length_of_dna, placeholders)
+    print("Synthetic DNA sequence:")
+    print(synthetic_dna)
+except ValueError as e:
+    print(f"Error: {e}")
